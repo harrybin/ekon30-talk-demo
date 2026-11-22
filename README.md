@@ -38,12 +38,12 @@ keine Quelldateien. Für die Demo-Time-Akte weiterhin den isolierten Workspace v
 - `node demo.mjs run baseline` führt die Konsolen-Demo mit vier Sessions aus und zeigt die tatsächlichen Track-Zahlen neben dem erwarteten Ergebnis. Dies ist ein Anwendungslauf, kein Test.
 - In den einzeln geöffneten Workspaces `.run/baseline` und `.run/solution` stehen die VS-Code-Tasks **Demo: Bauen** und **Demo: Starten** bereit. Starten baut die Anwendung erneut und zeigt ihre Ausgabe im Terminal. Node.js und FPC müssen im PATH von VS Code verfügbar sein.
 - Die versionierten Akte unter `demotime/` sind Vorlagen; nur die nach `.run/baseline/.demo/` kopierten Akte sind für diesen Workspace bestimmt.
-- Die Demo-Time-Terminalaktionen erwarten ein Terminal im Workspace `.run/baseline`. Nicht den Repository-Root als Copilot-Arbeitsbereich für den Live-Akt nutzen.
+- Demo-Time-Terminalaktionen lösen den Runner über `{DT_WORKSPACE_PATH}` auf; ein Wechsel des Terminalverzeichnisses ist daher unkritisch. `.run/baseline` muss weiterhin der geöffnete VS-Code-Workspace sein.
 - Folien und diesen Ablauf offline bereithalten. Copilot-Anmeldung und Antworten vorab überprüfen.
 
 Ein bereits vorhandenes `.run` wird durch `prepare` nicht aktualisiert: Für die neue Anwendung
 `fixtures/common/CatalogDemo.lpr` und `fixtures/common/.vscode/tasks.json` in die entsprechenden
-Pfade beider Workspaces übernehmen und die SDD-Aktvorlage nach `.run/baseline/.demo/sdd-talk.json`
+Pfade beider Workspaces übernehmen und die beiden Aktvorlagen aus `demotime/` nach `.run/baseline/.demo/`
 übertragen. Vorhandene Dateien vorher vergleichen und eigene Änderungen erhalten; kein
 `prepare --reset` ohne Sicherung. Ist der Baseline-Workspace bereits initial committet, die dort
 übernommenen Dateien nach Prüfung auch lokal committen, damit der BMad-Build wieder mit sauberem
