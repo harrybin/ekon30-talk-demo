@@ -96,11 +96,30 @@ if (action === 'prepare') {
     console.error('BMad-Init abgebrochen: HEAD oder vorgemerkte Änderungen existieren oder Git konnte sie nicht prüfen. Vorhandene Arbeit prüfen; nichts wurde committet.')
     process.exit(1)
   }
-  for (const path of ['.agents/skills', '.github/skills', '_bmad', 'skills-lock.json']) {
+  for (const path of ['.github/skills', '_bmad']) {
     if (await exists(join(baseline, path))) {
       console.error(`BMad-Init abgebrochen: ${path} existiert bereits und wird nicht überschrieben. Vorhandene Installation und Änderungen manuell prüfen.`)
       process.exit(1)
     }
+  }
+  const skills = ['bmad', 'bmod-core-tools', 'bmod-method', 'bmad-agent-po', 'bmad-build']
+  const skillsRoot = join(baseline, '.agents', 'skills')
+  const reuseSkills = await exists(skillsRoot)
+  if (reuseSkills) {
+    const entries = await readdir(skillsRoot, { withFileTypes: true })
+    if (entries.length !== skills.length || entries.some(entry => !entry.isDirectory() || !skills.includes(entry.name))) {
+      console.error('BMad-Init abgebrochen: .agents/skills enthält eine unvollständige oder zusätzliche Installation und wird nicht überschrieben. Bitte manuell prüfen.')
+      process.exit(1)
+    }
+    for (const skill of skills) {
+      if (!await exists(join(skillsRoot, skill, 'SKILL.md')) || !await exists(join(skillsRoot, skill, 'bmod.toml'))) {
+        console.error(`BMad-Init abgebrochen: Skill ${skill} ist unvollständig. Bitte manuell prüfen.`)
+        process.exit(1)
+      }
+    }
+  } else if (await exists(join(baseline, 'skills-lock.json'))) {
+    console.error('BMad-Init abgebrochen: skills-lock.json existiert ohne Skills und wird nicht überschrieben. Bitte manuell prüfen.')
+    process.exit(1)
   }
   const allowed = new Set([
     ...await filesIn(join(root, 'fixtures', 'common')),
@@ -114,20 +133,29 @@ if (action === 'prepare') {
     console.error(`BMad-Init abgebrochen: Git-Status konnte nicht geprüft werden: ${status.error?.message ?? status.stderr.trim()}`)
     process.exit(1)
   }
-  const unexpected = status.stdout.split(/\r?\n/).filter(Boolean).filter(line => !allowed.has(line.slice(3)))
+  const unexpected = status.stdout.split(/\r?\n/).filter(Boolean).filter(line => {
+    const path = line.slice(3)
+    return !allowed.has(path) && !(reuseSkills && (
+      path === 'skills-lock.json' || skills.some(skill => path.startsWith(`.agents/skills/${skill}/`))
+    ))
+  })
   if (unexpected.length) {
     console.error('BMad-Init abgebrochen: Nicht zur Demo gehörende Dateien vorhanden; bitte zuerst prüfen und sichern:\n' + unexpected.join('\n'))
     process.exit(1)
   }
   if (execute('uv', ['--version']) !== 0) process.exit(1)
-  const installArgs = ['skills', 'add', 'bmad-code-org/BMAD-METHOD', '--skill', 'bmad', '--skill', 'bmod-core-tools', '--skill', 'bmod-method', '--skill', 'bmad-agent-po', '--skill', 'bmad-build', '--agent', 'github-copilot', '--copy', '-y']
-  const installEnv = { ...process.env, DISABLE_TELEMETRY: '1' }
-  const install = process.platform === 'win32'
-    ? execute(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', ['npx', '--yes', ...installArgs].join(' ')], baseline, installEnv)
-    : execute('npx', ['--yes', ...installArgs], baseline, installEnv)
-  if (install !== 0) {
-    console.error('BMad-Installation fehlgeschlagen; vorhandene Dateien vor einem erneuten Versuch prüfen. Es wurde kein Commit erstellt.')
-    process.exit(install)
+  if (reuseSkills) {
+    console.log('Vorhandene BMad-Skills werden unverändert verwendet und lokal mitcommittet.')
+  } else {
+    const installArgs = ['skills', 'add', 'bmad-code-org/BMAD-METHOD', '--skill', 'bmad', '--skill', 'bmod-core-tools', '--skill', 'bmod-method', '--skill', 'bmad-agent-po', '--skill', 'bmad-build', '--agent', 'github-copilot', '--copy', '-y']
+    const installEnv = { ...process.env, DISABLE_TELEMETRY: '1' }
+    const install = process.platform === 'win32'
+      ? execute(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', ['npx', '--yes', ...installArgs].join(' ')], baseline, installEnv)
+      : execute('npx', ['--yes', ...installArgs], baseline, installEnv)
+    if (install !== 0) {
+      console.error('BMad-Installation fehlgeschlagen; vorhandene Dateien vor einem erneuten Versuch prüfen. Es wurde kein Commit erstellt.')
+      process.exit(install)
+    }
   }
   const setupArgs = ['run', '--no-cache', join('.agents', 'skills', 'bmad', 'scripts', 'setup.py'),
     '--project-root', baseline, '--skill', join(baseline, '.agents', 'skills', 'bmad'),

@@ -33,7 +33,7 @@ test('BMad init preserves an existing installation and unknown files', async () 
     await writeFile(join(skill, 'SKILL.md'), 'keep this skill')
     let result = run(temp, 'init-bmad')
     assert.equal(result.status, 1)
-    assert.match(result.stderr, /existiert bereits und wird nicht überschrieben/)
+    assert.match(result.stderr, /unvollständige oder zusätzliche Installation/)
     assert.equal(await readFile(join(skill, 'SKILL.md'), 'utf8'), 'keep this skill')
 
     await rm(join(baseline, '.agents'), { recursive: true })
@@ -48,7 +48,7 @@ test('BMad init preserves an existing installation and unknown files', async () 
   }
 })
 
-test('real BMad init preserves the existing ticket and renders both demo skills', {
+for (const preinstalled of [false, true]) test(`real BMad init ${preinstalled ? 'reuses installed skills' : 'installs skills'} and renders both`, {
   skip: process.env.BMAD_INSTALL_TEST !== '1' && 'Set BMAD_INSTALL_TEST=1 for the network integration test',
 }, async () => {
   const temp = await workspace()
@@ -58,8 +58,23 @@ test('real BMad init preserves the existing ticket and renders both demo skills'
     const ticket = join(baseline, '_bmad-output', 'backlog', 'ticket-sessions-je-track.md')
     await mkdir(dirname(ticket), { recursive: true })
     await writeFile(ticket, 'existing ticket\n')
+    let existingSkill
+    const skillFile = join(baseline, '.agents', 'skills', 'bmad-agent-po', 'SKILL.md')
+    if (preinstalled) {
+      const args = ['skills', 'add', 'bmad-code-org/BMAD-METHOD', '--skill', 'bmad', '--skill', 'bmod-core-tools', '--skill', 'bmod-method', '--skill', 'bmad-agent-po', '--skill', 'bmad-build', '--agent', 'github-copilot', '--copy', '-y']
+      const env = { ...process.env, DISABLE_TELEMETRY: '1' }
+      const install = process.platform === 'win32'
+        ? spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', ['npx', '--yes', ...args].join(' ')], { cwd: baseline, encoding: 'utf8', env })
+        : spawnSync('npx', ['--yes', ...args], { cwd: baseline, encoding: 'utf8', env })
+      assert.equal(install.status, 0, install.stderr)
+      existingSkill = await readFile(skillFile)
+    }
     const init = run(temp, 'init-bmad')
     assert.equal(init.status, 0, init.stderr)
+    if (preinstalled) {
+      assert.match(init.stdout, /Vorhandene BMad-Skills werden unverändert verwendet/)
+      assert.deepEqual(await readFile(skillFile), existingSkill)
+    }
     assert.equal(await readFile(ticket, 'utf8'), 'existing ticket\n')
     const tracked = spawnSync('git', ['ls-files', '--', '_bmad-output/backlog/ticket-sessions-je-track.md'], { cwd: baseline, encoding: 'utf8' })
     assert.equal(tracked.stdout, '')
