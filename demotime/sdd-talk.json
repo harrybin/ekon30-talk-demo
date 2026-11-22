@@ -1,14 +1,14 @@
 {
   "$schema": "https://demotime.show/demo-time.schema.json",
   "title": "EKON 30 · Spec-Driven Development",
-  "description": "Ein zusammenhängender Demo-Faden: PRD → BMAD-Ticket → Build-Plan → überprüfte Änderung. Ticket, Story und Scope bleiben über alle Phasen verbunden; bei Timeout die jeweilige Fallback-Szene verwenden.",
+  "description": "Drei Folien-Demos: Clarify, Plan und Build & verify. Init, Live, Helfer und Fallback sind in den Szenentiteln gekennzeichnet.",
   "version": 3,
   "timer": 11,
   "loop": false,
   "scenes": [
     {
       "id": "sdd-reset",
-      "title": "Start · Baseline zurücksetzen",
+      "title": "SDD · Init · Baseline zurücksetzen",
       "description": "Setzt nur SessionCatalog.pas zurück und öffnet das Briefing.",
       "moves": [
         {
@@ -26,7 +26,7 @@
     },
     {
       "id": "sdd-baseline-app",
-      "title": "Ausgangszustand · Anwendung ausführen",
+      "title": "SDD · Demo 1 Clarify · Live: Ausgangszustand zeigen",
       "description": "Vor dem ersten KI-Schritt die Anwendung mit vier Sessions ausführen. Die Baseline zählt KI und ki fälschlich zusammen.",
       "moves": [
         {
@@ -39,7 +39,7 @@
     },
     {
       "id": "sdd-s1",
-      "title": "Demo-Faden · Sofia klärt und schreibt das Ticket",
+      "title": "SDD · Demo 1 Clarify · Live: Sofia schreibt das Ticket",
       "description": "Maximal 45 Sekunden. Eine offene Anforderung gemeinsam klären und das Standalone-Ticket prüfen; bei Timeout die nächste Fallback-Szene nutzen.",
       "autoAdvanceAfter": 45,
       "moves": [
@@ -59,7 +59,7 @@
     },
     {
       "id": "sdd-s1-fallback",
-      "title": "Ticket-Schritt · Fallback: vorbereitete Spec",
+      "title": "SDD · Demo 1 Clarify · Fallback: vorbereitete Spec",
       "description": "Die Entscheidungen sind in der Offline-Ticket-Spec dokumentiert; sie wurde nicht von Sofia live erzeugt.",
       "moves": [
         {
@@ -80,7 +80,7 @@
     },
     {
       "id": "sdd-s2",
-      "title": "Ticket-Faden · BMad Build plant",
+      "title": "SDD · Demo 2 Plan · Live: BMad Build plant",
       "description": "Nur der Chat wechselt für den sauberen Build-Start; dasselbe Ticket bleibt die Spezifikation. Maximal 45 Sekunden auf den Build-Plan warten; bei Timeout die nächste Fallback-Szene nutzen.",
       "autoAdvanceAfter": 45,
       "moves": [
@@ -101,7 +101,7 @@
     },
     {
       "id": "sdd-s2-fallback",
-      "title": "Plan-Schritt · Fallback: vorbereiteter Build-Plan",
+      "title": "SDD · Demo 2 Plan · Fallback: vorbereiteter Build-Plan",
       "description": "Der Plan ist eine Offline-Referenz und keine von bmad-build erzeugte Plan-Datei.",
       "moves": [
         {
@@ -122,7 +122,7 @@
     },
     {
       "id": "sdd-s3",
-      "title": "Ticket-Faden · Freigegebenen Plan umsetzen",
+      "title": "SDD · Demo 3 Build & verify · Live: Plan umsetzen",
       "description": "Nur im isolierten .run/baseline-Workspace ausführen. Der Baseline-Test schlägt absichtlich fehl. Maximal 60 Sekunden Agent-Wartezeit; bei Timeout nächste Szene.",
       "autoAdvanceAfter": 60,
       "moves": [
@@ -151,7 +151,7 @@
     },
     {
       "id": "sdd-s3-fallback",
-      "title": "Build-Schritt · Fallback: vorbereitete Referenz",
+      "title": "SDD · Demo 3 Build & verify · Fallback: vorbereitete Referenz",
       "description": "Bei Timeout oder falschem Scope Copilot abbrechen. Die vorbereitete Lösung ist eine Referenz, kein live erzeugtes Ergebnis.",
       "moves": [
         {
@@ -178,7 +178,7 @@
     },
     {
       "id": "sdd-s3-verify",
-      "title": "Build-Schritt · Live-Ergebnis prüfen",
+      "title": "SDD · Demo 3 Build & verify · Helfer: Live-Ergebnis prüfen",
       "description": "Nur wenn die Agent-Antwort rechtzeitig und im richtigen Scope fertig ist: Baseline-Checks ausführen und tatsächlichen Diff prüfen.",
       "moves": [
         {
