@@ -29,7 +29,18 @@ if (action === 'prepare') {
     console.error('.run existiert bereits. Änderungen sichern; nur mit prepare --reset ausdrücklich neu erstellen.')
     process.exit(1)
   }
-  if (exists) await rm(run, { recursive: true, force: true })
+  if (exists) {
+    try {
+      await rm(run, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 })
+    } catch (error) {
+      if (!['EBUSY', 'EPERM', 'EACCES', 'ENOTEMPTY'].includes(error.code)) throw error
+      console.error(`Reset fehlgeschlagen: .run konnte nicht vollständig entfernt werden (${error.code}: ${error.message}).`)
+      console.error('Achtung: Dateien in .run können bereits teilweise gelöscht worden sein.')
+      console.error('Den .run-Workspace in VS Code sowie eigene Terminals und Programme mit Zugriff auf .run schließen.')
+      console.error('Verbleibende Daten prüfen und bei Bedarf sichern. Reset nur erneut starten, wenn das Löschen aller .run-Daten gewollt ist.')
+      process.exit(1)
+    }
+  }
   for (const name of ['baseline', 'solution']) {
     const destination = join(run, name)
     await mkdir(destination, { recursive: true })
