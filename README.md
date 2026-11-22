@@ -21,6 +21,7 @@ keine Quelldateien. Für die Demo-Time-Akte weiterhin den isolierten Workspace v
 ## Vorbereitung und Bedienung
 
 - Node.js 24+, Free Pascal mit `fpc` im PATH von VS Code und Git; für Live-KI außerdem VS Code mit angemeldetem GitHub Copilot. Die Erweiterung **Demo Time** ist optional.
+- VS Code empfiehlt Pascal-Sprachunterstützung, Demo Time sowie GitHub Copilot und Copilot Chat im Repository und in den vorbereiteten Demo-Workspaces. Empfehlungen installieren nichts automatisch; FPC und die Copilot-Anmeldung bleiben separate Voraussetzungen.
 - In VS Code über **Terminal → Aufgabe ausführen** die Aufgaben mit dem Präfix **Demo:** auswählen. Im Repository gibt es Aufgaben für Vorbereitung, beide Reset-Arten, BMad-Einrichtung, Ticket, Bauen, Starten, Tests und Diff. Die Tasks im vorbereiteten Demo-Workspace bieten die entsprechenden Demo-Schritte ebenfalls an.
 - **Demo: Vorbereiten (bestehende Daten behalten)** ist der einmalige Vorbereitungsschritt für einen frischen Checkout. Wenn `.run` bereits existiert, bricht er ab und verändert nichts.
 - **Demo: Alles zurücksetzen (.run löschen)** ist nur im Repository verfügbar: Er löscht beide Demo-Workspaces samt Änderungen und verlangt die Eingabe `RESET`. Vorher sichern und den Demo-Workspace in VS Code schließen. **Demo: Ausgangsdatei zurücksetzen (überschreiben)** ersetzt dagegen nur die Pascal-Ausgangsdatei und verlangt ebenfalls `RESET`.
@@ -42,7 +43,8 @@ keine Quelldateien. Für die Demo-Time-Akte weiterhin den isolierten Workspace v
 - Folien und diesen Ablauf offline bereithalten. Copilot-Anmeldung und Antworten vorab überprüfen.
 
 Ein bereits vorhandenes `.run` wird durch `prepare` nicht aktualisiert: Für die neue Anwendung
-`fixtures/common/CatalogDemo.lpr` und `fixtures/common/.vscode/tasks.json` in die entsprechenden
+`fixtures/common/CatalogDemo.lpr`, `fixtures/common/.vscode/tasks.json` und
+`fixtures/common/.vscode/extensions.json` in die entsprechenden
 Pfade beider Workspaces übernehmen und die beiden Aktvorlagen aus `demotime/` nach `.run/baseline/.demo/`
 übertragen. Vorhandene Dateien vorher vergleichen und eigene Änderungen erhalten; kein
 `prepare --reset` ohne Sicherung. Ist der Baseline-Workspace bereits initial committet, die dort
