@@ -1,11 +1,11 @@
-import { access, cp, mkdir, rm } from 'node:fs/promises'
+import { access, cp, mkdir, realpath, rm } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 const run = join(root, '.run')
-const [action, target] = process.argv.slice(2)
+const [action, target, confirmation] = process.argv.slice(2)
 
 function execute(command, args, cwd = root) {
   const result = spawnSync(command, args, { cwd, stdio: 'inherit' })
@@ -17,6 +17,10 @@ function execute(command, args, cwd = root) {
 }
 
 if (action === 'prepare') {
+  if (target === '--reset' && confirmation !== undefined && confirmation !== 'RESET') {
+    console.error('Abgebrochen: Zum vollständigen Zurücksetzen RESET eingeben.')
+    process.exit(1)
+  }
   let exists = false
   try { await access(run); exists = true } catch (error) {
     if (error.code !== 'ENOENT') throw error
@@ -40,10 +44,51 @@ if (action === 'prepare') {
   if (isolated !== 0) process.exit(isolated)
   console.log('Demo vorbereitet. .run/baseline als eigenen VS-Code-Ordner öffnen.')
 } else if (action === 'reset-baseline') {
+  if (target !== undefined && target !== 'RESET') {
+    console.error('Abgebrochen: Zum Zurücksetzen der Ausgangsdatei RESET eingeben.')
+    process.exit(1)
+  }
   const baseline = join(run, 'baseline')
   await access(baseline)
   await cp(join(root, 'fixtures', 'baseline', 'SessionCatalog.pas'), join(baseline, 'SessionCatalog.pas'))
   console.log('Baseline SessionCatalog.pas wiederhergestellt; andere .run-Dateien bleiben unverändert.')
+} else if (action === 'init-bmad-commit') {
+  if (target !== 'COMMIT') {
+    console.error('Abgebrochen: Für den lokalen Initial-Commit COMMIT eingeben.')
+    process.exit(1)
+  }
+  const baseline = join(run, 'baseline')
+  const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: baseline, encoding: 'utf8' })
+  if (top.error || top.status !== 0) {
+    console.error(`Isoliertes Git-Repository nicht verfügbar: ${top.error?.message ?? top.stderr.trim()}`)
+    process.exit(1)
+  }
+  const actual = await realpath(top.stdout.trim())
+  const expected = await realpath(baseline)
+  if ((process.platform === 'win32' ? actual.toLowerCase() : actual) !==
+      (process.platform === 'win32' ? expected.toLowerCase() : expected)) {
+    console.error('Abgebrochen: Der Git-Root ist nicht der isolierte Baseline-Workspace.')
+    process.exit(1)
+  }
+  const head = spawnSync('git', ['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: baseline })
+  if (head.error || head.status !== 1) {
+    console.error(head.error ? `git konnte nicht gestartet werden: ${head.error.message}` :
+      'Abgebrochen: Ein Initial-Commit existiert bereits oder HEAD konnte nicht geprüft werden.')
+    process.exit(1)
+  }
+  const staged = spawnSync('git', ['diff', '--cached', '--quiet'], { cwd: baseline })
+  if (staged.error || staged.status !== 0) {
+    console.error(staged.error ? `git konnte nicht gestartet werden: ${staged.error.message}` :
+      'Abgebrochen: Der Index ist nicht leer oder konnte nicht geprüft werden.')
+    process.exit(1)
+  }
+  if (execute('git', ['add', '--all'], baseline) !== 0) process.exit(1)
+  process.exit(execute('git', [
+    '-c', 'user.name=Demo Presenter',
+    '-c', 'user.email=demo@example.invalid',
+    'commit', '-m', 'chore: prepare isolated demo',
+    '--trailer', 'Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>',
+  ], baseline))
 } else if (action === 'prepare-bmad-ticket') {
   const baseline = join(run, 'baseline')
   const ticket = join(baseline, '_bmad-output', 'backlog', 'ticket-sessions-je-track.md')
@@ -87,19 +132,22 @@ if (action === 'prepare') {
   } else {
     console.log('BMAD-Ticket ist bereits committed.')
   }
-} else if (action === 'test' && ['baseline', 'solution'].includes(target)) {
-  const working = join(run, target)
-  const output = join(working, 'build')
+} else if (['build', 'run', 'test'].includes(action) && ['baseline', 'solution', 'repository'].includes(target)) {
+  const working = target === 'repository' ? join(root, 'fixtures', 'common') : join(run, target)
+  const output = target === 'repository' ? join(root, 'build') : join(working, 'build')
+  const program = action === 'test' ? 'CatalogTests' : 'CatalogDemo'
   await mkdir(output, { recursive: true })
-  const compiled = execute('fpc', ['-B', '-Mdelphi', '-Sh', '-Cr', '-Co', `-Fu${working}`,
-    `-FU${output}`, `-FE${output}`, join(working, 'CatalogTests.lpr')])
+  const units = target === 'repository' ? [`-Fu${join(root, 'fixtures', 'baseline')}`] : []
+  const compiled = execute('fpc', ['-B', '-Mdelphi', '-Sh', '-Cr', '-Co', ...units, `-Fu${working}`,
+    `-FU${output}`, `-FE${output}`, join(working, `${program}.lpr`)])
   if (compiled !== 0) process.exit(compiled)
-  process.exit(execute(join(output, `CatalogTests${process.platform === 'win32' ? '.exe' : ''}`), []))
+  if (action === 'build') process.exit(0)
+  process.exit(execute(join(output, `${program}${process.platform === 'win32' ? '.exe' : ''}`), []))
 } else if (action === 'diff') {
   const status = execute('git', ['diff', '--no-index', '--', join(run, 'baseline', 'SessionCatalog.pas'),
     join(run, 'solution', 'SessionCatalog.pas')])
   if (status > 1) process.exit(status)
 } else {
-  console.error('Verwendung: node demo.mjs prepare [--reset] | reset-baseline | prepare-bmad-ticket | test baseline | test solution | diff')
+  console.error('Verwendung: node demo.mjs prepare [--reset [RESET]] | reset-baseline [RESET] | init-bmad-commit COMMIT | prepare-bmad-ticket | build <baseline|solution|repository> | run <baseline|solution|repository> | test <baseline|solution|repository> | diff')
   process.exit(1)
 }
