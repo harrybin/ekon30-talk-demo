@@ -52,7 +52,7 @@ Arbeitsbaum starten kann.
 Für den SDD-Akt wird BMad Method ausschließlich im isolierten `.run/baseline` installiert.
 Voraussetzungen sind Node.js, npm, Git, `uv` und ein VS-Code-Copilot-Client mit Skill-Unterstützung.
 Prüfe die Installationswarnungen und Berechtigungen; installiere die Skills nicht im Repository-Root.
-Für einen frischen Checkout oder eine vorbereitete Baseline ohne BMad und ohne Git-Commit
+Für einen frischen Checkout oder eine vorbereitete Baseline ohne `_bmad` und ohne Git-Commit
 **Demo: Komplett vorbereiten (mit BMad)** wählen oder im Repository ausführen:
 
 ```powershell
@@ -60,9 +60,12 @@ node demo.mjs init-bmad
 ```
 
 Der Task installiert die fünf benötigten Skills, führt das BMad-Setup aus und committet die
-vorbereiteten Dateien lokal. Ein vorhandenes Ticket unter `_bmad-output/backlog/ticket-sessions-je-track.md`
+vorbereiteten Dateien lokal. Sind die fünf Skills bereits vollständig unter `.agents/skills`
+installiert, werden sie unverändert wiederverwendet und mitcommittet: vorher prüfen.
+Ein vorhandenes Ticket unter `_bmad-output/backlog/ticket-sessions-je-track.md`
 bleibt unverändert und uncommitted; **Demo: Ticket vorbereiten** übernimmt es später. Bereits
-vorhandene Skill- oder BMad-Installationen, ein vorhandener Commit, vorgemerkte oder andere
+vorhandene unvollständige oder zusätzliche Skill-Installationen, ein vorhandenes `_bmad`,
+ein vorhandener Commit, vorgemerkte oder andere
 unbekannte Dateien führen zum Abbruch, statt vorhandene Arbeit zu überschreiben oder mit zu
 committen. Bei einem abgebrochenen Download oder Setup können bereits Dateien angelegt worden
 sein: diese prüfen und sichern; nicht blind erneut installieren oder löschen. Falls eine neue
