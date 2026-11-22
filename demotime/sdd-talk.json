@@ -25,6 +25,19 @@
       ]
     },
     {
+      "id": "sdd-baseline-app",
+      "title": "Ausgangszustand · Anwendung ausführen",
+      "description": "Vor dem ersten KI-Schritt die Anwendung mit vier Sessions ausführen. Die Baseline zählt KI und ki fälschlich zusammen.",
+      "moves": [
+        {
+          "action": "executeTerminalCommand",
+          "command": "node ..\\..\\demo.mjs run baseline",
+          "terminalId": "DemoTime",
+          "waitTimeout": 60000
+        }
+      ]
+    },
+    {
       "id": "sdd-s1",
       "title": "Demo-Faden · Sofia klärt und schreibt das Ticket",
       "description": "Maximal 45 Sekunden. Eine offene Anforderung gemeinsam klären und das Standalone-Ticket prüfen; bei Timeout die nächste Fallback-Szene nutzen.",
