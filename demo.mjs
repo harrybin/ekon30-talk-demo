@@ -1,4 +1,4 @@
-import { access, cp, mkdir, realpath, rm } from 'node:fs/promises'
+import { access, cp, mkdir, readdir, realpath, rm } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
@@ -7,13 +7,31 @@ const root = fileURLToPath(new URL('.', import.meta.url))
 const run = join(root, '.run')
 const [action, target, confirmation] = process.argv.slice(2)
 
-function execute(command, args, cwd = root) {
-  const result = spawnSync(command, args, { cwd, stdio: 'inherit' })
+function execute(command, args, cwd = root, env = process.env) {
+  const result = spawnSync(command, args, { cwd, stdio: 'inherit', env })
   if (result.error) {
     console.error(`${command} konnte nicht gestartet werden: ${result.error.message}`)
     process.exit(1)
   }
   return result.status ?? 1
+}
+
+async function exists(path) {
+  try { await access(path); return true } catch (error) {
+    if (error.code === 'ENOENT') return false
+    throw error
+  }
+}
+
+async function filesIn(path, prefix = '') {
+  const entries = await readdir(path, { withFileTypes: true })
+  const files = []
+  for (const entry of entries) {
+    const relative = prefix ? `${prefix}/${entry.name}` : entry.name
+    if (entry.isDirectory()) files.push(...await filesIn(join(path, entry.name), relative))
+    else files.push(relative)
+  }
+  return files
 }
 
 if (action === 'prepare') {
@@ -54,6 +72,108 @@ if (action === 'prepare') {
   const isolated = execute('git', ['init', '--quiet', join(run, 'baseline')])
   if (isolated !== 0) process.exit(isolated)
   console.log('Demo vorbereitet. .run/baseline als eigenen VS-Code-Ordner öffnen.')
+} else if (action === 'init-bmad') {
+  if (!await exists(run)) {
+    const prepared = execute(process.execPath, [fileURLToPath(import.meta.url), 'prepare'])
+    if (prepared !== 0) process.exit(prepared)
+  }
+  const baseline = join(run, 'baseline')
+  const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: baseline, encoding: 'utf8' })
+  if (top.error || top.status !== 0 || !await exists(baseline)) {
+    console.error('BMad-Init abgebrochen: Isoliertes Baseline-Git-Repository fehlt.')
+    process.exit(1)
+  }
+  const actual = await realpath(top.stdout.trim())
+  const expected = await realpath(baseline)
+  if ((process.platform === 'win32' ? actual.toLowerCase() : actual) !==
+      (process.platform === 'win32' ? expected.toLowerCase() : expected)) {
+    console.error('BMad-Init abgebrochen: Git-Root ist nicht der isolierte Baseline-Workspace.')
+    process.exit(1)
+  }
+  const head = spawnSync('git', ['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: baseline })
+  const staged = spawnSync('git', ['diff', '--cached', '--quiet'], { cwd: baseline })
+  if (head.error || head.status !== 1 || staged.error || staged.status !== 0) {
+    console.error('BMad-Init abgebrochen: HEAD oder vorgemerkte Änderungen existieren oder Git konnte sie nicht prüfen. Vorhandene Arbeit prüfen; nichts wurde committet.')
+    process.exit(1)
+  }
+  for (const path of ['.agents/skills', '.github/skills', '_bmad', 'skills-lock.json']) {
+    if (await exists(join(baseline, path))) {
+      console.error(`BMad-Init abgebrochen: ${path} existiert bereits und wird nicht überschrieben. Vorhandene Installation und Änderungen manuell prüfen.`)
+      process.exit(1)
+    }
+  }
+  const allowed = new Set([
+    ...await filesIn(join(root, 'fixtures', 'common')),
+    ...await filesIn(join(root, 'context'), 'context'),
+    ...await filesIn(join(root, 'demotime'), '.demo'),
+    'SessionCatalog.pas', 'AGENTS.md', 'prd.md', 'spec.md', 'plan.md',
+    '_bmad-output/backlog/ticket-sessions-je-track.md',
+  ])
+  const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: baseline, encoding: 'utf8' })
+  if (status.error || status.status !== 0) {
+    console.error(`BMad-Init abgebrochen: Git-Status konnte nicht geprüft werden: ${status.error?.message ?? status.stderr.trim()}`)
+    process.exit(1)
+  }
+  const unexpected = status.stdout.split(/\r?\n/).filter(Boolean).filter(line => !allowed.has(line.slice(3)))
+  if (unexpected.length) {
+    console.error('BMad-Init abgebrochen: Nicht zur Demo gehörende Dateien vorhanden; bitte zuerst prüfen und sichern:\n' + unexpected.join('\n'))
+    process.exit(1)
+  }
+  if (execute('uv', ['--version']) !== 0) process.exit(1)
+  const installArgs = ['skills', 'add', 'bmad-code-org/BMAD-METHOD', '--skill', 'bmad', '--skill', 'bmod-core-tools', '--skill', 'bmod-method', '--skill', 'bmad-agent-po', '--skill', 'bmad-build', '--agent', 'github-copilot', '--copy', '-y']
+  const installEnv = { ...process.env, DISABLE_TELEMETRY: '1' }
+  const install = process.platform === 'win32'
+    ? execute(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', ['npx', '--yes', ...installArgs].join(' ')], baseline, installEnv)
+    : execute('npx', ['--yes', ...installArgs], baseline, installEnv)
+  if (install !== 0) {
+    console.error('BMad-Installation fehlgeschlagen; vorhandene Dateien vor einem erneuten Versuch prüfen. Es wurde kein Commit erstellt.')
+    process.exit(install)
+  }
+  const setupArgs = ['run', '--no-cache', join('.agents', 'skills', 'bmad', 'scripts', 'setup.py'),
+    '--project-root', baseline, '--skill', join(baseline, '.agents', 'skills', 'bmad'),
+    '--root', join(baseline, '.agents', 'skills')]
+  const questions = spawnSync('uv', [...setupArgs, '--list-config-questions'], { cwd: baseline, encoding: 'utf8' })
+  if (questions.status !== 0) {
+    console.error(`BMad-Konfigurationsfragen konnten nicht geprüft werden: ${questions.error?.message ?? questions.stderr.trim()}`)
+    process.exit(1)
+  }
+  let pending
+  try { pending = JSON.parse(questions.stdout) } catch {
+    console.error('BMad lieferte ungültige Konfigurationsfragen. Setup abgebrochen.')
+    process.exit(1)
+  }
+  if (!Array.isArray(pending) || pending.length) {
+    console.error('BMad benötigt Konfigurationsentscheidungen. Setup manuell in VS Code mit „Run bmad setup“ fortsetzen:\n' + questions.stdout)
+    process.exit(1)
+  }
+  const setup = spawnSync('uv', setupArgs, { cwd: baseline, encoding: 'utf8' })
+  if (setup.stderr) process.stderr.write(setup.stderr)
+  if (setup.status !== 0) {
+    console.error(`BMad-Setup fehlgeschlagen: ${setup.error?.message ?? setup.stdout.trim()}. Vorhandene Dateien vor einem erneuten Versuch prüfen.`)
+    process.exit(1)
+  }
+  let result
+  try { result = JSON.parse(setup.stdout) } catch {
+    console.error('BMad lieferte ein ungültiges Setup-Ergebnis; bitte die Installation manuell prüfen.')
+    process.exit(1)
+  }
+  if (!result.current || result.problems?.length || result.pending_questions?.length || result.unmet_requirements?.length || result.missing_module_records?.length) {
+    console.error('BMad-Setup ist nicht vollständig; bitte die Installation manuell prüfen:\n' + setup.stdout)
+    process.exit(1)
+  }
+  console.log(setup.stdout.trim())
+  const added = execute('git', ['add', '--all', '--', '.', ':(exclude)_bmad-output/backlog/ticket-sessions-je-track.md'], baseline)
+  if (added !== 0) process.exit(added)
+  const committed = execute('git', [
+    '-c', 'user.name=Demo Presenter', '-c', 'user.email=demo@example.invalid',
+    'commit', '-m', 'chore: prepare isolated demo',
+    '--trailer', 'Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>',
+  ], baseline)
+  if (committed !== 0) {
+    console.error('Initial-Commit fehlgeschlagen; der Git-Index kann vorgemerkte Dateien enthalten. Bitte prüfen.')
+    process.exit(committed)
+  }
+  console.log('BMad eingerichtet und lokal initial committet. Ein vorhandenes Demo-Ticket bleibt unverändert und uncommitted.')
 } else if (action === 'reset-baseline') {
   if (target !== undefined && target !== 'RESET') {
     console.error('Abgebrochen: Zum Zurücksetzen der Ausgangsdatei RESET eingeben.')
@@ -159,6 +279,6 @@ if (action === 'prepare') {
     join(run, 'solution', 'SessionCatalog.pas')])
   if (status > 1) process.exit(status)
 } else {
-  console.error('Verwendung: node demo.mjs prepare [--reset [RESET]] | reset-baseline [RESET] | init-bmad-commit COMMIT | prepare-bmad-ticket | build <baseline|solution|repository> | run <baseline|solution|repository> | test <baseline|solution|repository> | diff')
+  console.error('Verwendung: node demo.mjs prepare [--reset [RESET]] | init-bmad | reset-baseline [RESET] | init-bmad-commit COMMIT | prepare-bmad-ticket | build <baseline|solution|repository> | run <baseline|solution|repository> | test <baseline|solution|repository> | diff')
   process.exit(1)
 }
