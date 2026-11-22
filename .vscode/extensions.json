@@ -2,7 +2,6 @@
   "recommendations": [
     "alefragnani.pascal",
     "eliostruyf.vscode-demo-time",
-    "github.copilot",
     "github.copilot-chat"
   ]
 }
