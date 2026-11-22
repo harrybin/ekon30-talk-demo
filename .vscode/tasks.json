@@ -17,6 +17,11 @@
       "problemMatcher": []
     },
     {
+      "label": "Demo: Komplett vorbereiten (mit BMad)",
+      "type": "process", "command": "node", "args": ["demo.mjs", "init-bmad"],
+      "problemMatcher": [], "presentation": { "reveal": "always" }
+    },
+    {
       "label": "Demo: BMad-Skills installieren",
       "type": "shell", "command": "npx",
       "args": ["skills", "add", "bmad-code-org/BMAD-METHOD", "--skill", "bmad", "--skill", "bmod-core-tools", "--skill", "bmod-method", "--skill", "bmad-agent-po", "--skill", "bmad-build", "--agent", "github-copilot", "--copy"],
