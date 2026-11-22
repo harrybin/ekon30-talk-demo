@@ -10,8 +10,8 @@ Die eigenen Dateien stehen unter der [MIT-Lizenz](LICENSE); die dort beschrieben
 
 ## Anwendung direkt starten
 
-Das Repository in VS Code öffnen und **Demo: Starten** über die Tasks ausführen. Die Konsolen-Demo
-wird dabei gebaut und zeigt die Track-Zählung der vorbereiteten Ausgangsversion. **Demo: Bauen**
+Das Repository in VS Code öffnen und **Demo: Live · Anwendung starten** über die Tasks ausführen. Die Konsolen-Demo
+wird dabei gebaut und zeigt die Track-Zählung der vorbereiteten Ausgangsversion. **Demo: Helfer · Anwendung bauen**
 baut sie ohne Start. Beide Tasks benötigen Node.js und FPC im PATH von VS Code; eine `.run`-Vorbereitung
 ist dafür nicht nötig. Das Ergebnis liegt im ignorierten Ordner `build/`.
 
@@ -22,9 +22,9 @@ keine Quelldateien. Für die Demo-Time-Akte weiterhin den isolierten Workspace v
 
 - Node.js 24+, Free Pascal mit `fpc` im PATH von VS Code und Git; für BMad zusätzlich npm, `uv` und Internet. Für Live-KI außerdem VS Code mit angemeldetem GitHub Copilot. Die Erweiterung **Demo Time** ist optional.
 - VS Code empfiehlt Pascal-Sprachunterstützung, Demo Time sowie GitHub Copilot und Copilot Chat im Repository und in den vorbereiteten Demo-Workspaces. Empfehlungen installieren nichts automatisch; FPC und die Copilot-Anmeldung bleiben separate Voraussetzungen.
-- In VS Code über **Terminal → Aufgabe ausführen** die Aufgaben mit dem Präfix **Demo:** auswählen. Im Repository gibt es Aufgaben für Vorbereitung, beide Reset-Arten, BMad-Einrichtung, Ticket, Bauen, Starten, Tests und Diff. Die Tasks im vorbereiteten Demo-Workspace bieten die entsprechenden Demo-Schritte ebenfalls an.
-- Für den SDD-Akt **Demo: Komplett vorbereiten (mit BMad)** einmal ausführen. Die Aufgabe erstellt bei Bedarf `.run`, installiert BMad in `.run/baseline`, führt das Setup aus und erstellt dort den lokalen Initial-Commit. **Demo: Vorbereiten (bestehende Daten behalten)** bereitet dagegen nur die Offline-Workspaces vor und installiert nichts; wenn `.run` bereits existiert, bricht diese Aufgabe ab und verändert nichts.
-- **Demo: Alles zurücksetzen (.run löschen)** ist nur im Repository verfügbar: Er löscht beide Demo-Workspaces samt Änderungen und verlangt die Eingabe `RESET`. Vorher sichern und den Demo-Workspace in VS Code schließen. **Demo: Ausgangsdatei zurücksetzen (überschreiben)** ersetzt dagegen nur die Pascal-Ausgangsdatei und verlangt ebenfalls `RESET`.
+- In VS Code über **Terminal → Aufgabe ausführen** die Aufgaben mit dem Präfix **Demo:** auswählen. `Init`, `Reset`, `Live`, `Helfer` und `Fallback` unterscheiden Vorbereitung, Rücksetzen, Vorführung, Prüfung und Referenzlösung. Der Ticket-Task ist zusätzlich der SDD-Demo 2 (Plan) zugeordnet.
+- Für den SDD-Akt **Demo: Init · Komplett vorbereiten (mit BMad)** einmal ausführen. Die Aufgabe erstellt bei Bedarf `.run`, installiert BMad in `.run/baseline`, führt das Setup aus und erstellt dort den lokalen Initial-Commit. **Demo: Init · Offline vorbereiten (bestehende Daten behalten)** bereitet dagegen nur die Offline-Workspaces vor und installiert nichts; wenn `.run` bereits existiert, bricht diese Aufgabe ab und verändert nichts.
+- **Demo: Reset · Alles zurücksetzen (.run löschen)** ist nur im Repository verfügbar: Er löscht beide Demo-Workspaces samt Änderungen und verlangt die Eingabe `RESET`. Vorher sichern und den Demo-Workspace in VS Code schließen. **Demo: Reset · Ausgangsdatei zurücksetzen (überschreiben)** ersetzt dagegen nur die Pascal-Ausgangsdatei und verlangt ebenfalls `RESET`.
 - Bei `EBUSY`, `EPERM` oder `EACCES` kann Windows `.run` noch sperren. Der fehlgeschlagene Reset kann bereits Dateien gelöscht haben: verbleibende Inhalte prüfen und bei Bedarf sichern. Den `.run`-Workspace in VS Code sowie eigene Terminals und Programme mit Zugriff darauf schließen. Den Reset-Task erst erneut mit `RESET` bestätigen, wenn das Löschen aller verbleibenden `.run`-Daten gewollt ist; danach BMad wie unten beschrieben erneut einrichten.
 - Die Vorbereitung erstellt `.run/baseline` und `.run/solution` aus den versionierten Fixtures, kopiert `AGENTS.md` in beide Arbeitsordner und die beiden Akte aus `demotime/` nach `.run/baseline/.demo/`. Sind die Ordner bereits vorhanden, werden sie nicht überschrieben. Änderungen zuerst sichern; nur `node demo.mjs prepare --reset` löscht `.run` samt Änderungen ausdrücklich und stellt es neu her.
 - Für eine komplette Neuinitialisierung `.run/baseline` in VS Code schließen und den bestätigten Reset-Task ausführen. Dieser löscht beide generierten Workspaces und alle dortigen Änderungen; danach BMad mit dem Komplett-Task erneut einrichten.
@@ -35,7 +35,7 @@ keine Quelldateien. Für die Demo-Time-Akte weiterhin den isolierten Workspace v
 - `node demo.mjs test baseline` muss fehlschlagen: Der absichtlich eingebaute Fehler fasst `KI` und `ki` zusammen.
 - `node demo.mjs test solution` muss erfolgreich sein. `node demo.mjs diff` zeigt beide Implementierungen.
 - `node demo.mjs run baseline` führt die Konsolen-Demo mit vier Sessions aus und zeigt die tatsächlichen Track-Zahlen neben dem erwarteten Ergebnis. Dies ist ein Anwendungslauf, kein Test.
-- In den einzeln geöffneten Workspaces `.run/baseline` und `.run/solution` stehen die VS-Code-Tasks **Demo: Bauen** und **Demo: Starten** bereit. Starten baut die Anwendung erneut und zeigt ihre Ausgabe im Terminal. Node.js und FPC müssen im PATH von VS Code verfügbar sein.
+- In den einzeln geöffneten Workspaces `.run/baseline` und `.run/solution` stehen die VS-Code-Tasks **Demo: Helfer · Anwendung bauen** und **Demo: Live · Anwendung starten** bereit. Starten baut die Anwendung erneut und zeigt ihre Ausgabe im Terminal. Node.js und FPC müssen im PATH von VS Code verfügbar sein.
 - Die versionierten Akte unter `demotime/` sind Vorlagen; nur die nach `.run/baseline/.demo/` kopierten Akte sind für diesen Workspace bestimmt.
 - Demo-Time-Terminalaktionen lösen den Runner über `{DT_WORKSPACE_PATH}` auf; ein Wechsel des Terminalverzeichnisses ist daher unkritisch. `.run/baseline` muss weiterhin der geöffnete VS-Code-Workspace sein.
 - Folien und diesen Ablauf offline bereithalten. Copilot-Anmeldung und Antworten vorab überprüfen.
@@ -53,7 +53,7 @@ Für den SDD-Akt wird BMad Method ausschließlich im isolierten `.run/baseline` 
 Voraussetzungen sind Node.js, npm, Git, `uv` und ein VS-Code-Copilot-Client mit Skill-Unterstützung.
 Prüfe die Installationswarnungen und Berechtigungen; installiere die Skills nicht im Repository-Root.
 Für einen frischen Checkout oder eine vorbereitete Baseline ohne `_bmad` und ohne Git-Commit
-**Demo: Komplett vorbereiten (mit BMad)** wählen oder im Repository ausführen:
+**Demo: Init · Komplett vorbereiten (mit BMad)** wählen oder im Repository ausführen:
 
 ```powershell
 node demo.mjs init-bmad
@@ -63,7 +63,7 @@ Der Task installiert die fünf benötigten Skills, führt das BMad-Setup aus und
 vorbereiteten Dateien lokal. Sind die fünf Skills bereits vollständig unter `.agents/skills`
 installiert, werden sie unverändert wiederverwendet und mitcommittet: vorher prüfen.
 Ein vorhandenes Ticket unter `_bmad-output/backlog/ticket-sessions-je-track.md`
-bleibt unverändert und uncommitted; **Demo: Ticket vorbereiten** übernimmt es später. Bereits
+bleibt unverändert und uncommitted; **Demo: SDD Demo 2 Plan · Helfer: Ticket vorbereiten** übernimmt es später. Bereits
 vorhandene unvollständige oder zusätzliche Skill-Installationen, ein vorhandenes `_bmad`,
 ein vorhandener Commit, vorgemerkte oder andere
 unbekannte Dateien führen zum Abbruch, statt vorhandene Arbeit zu überschreiben oder mit zu
@@ -78,7 +78,7 @@ Run bmad status
 ```
 
 `bmad-build` erwartet einen frischen Chat und einen sauberen Git-Arbeitsbaum. Der ältere Task
-**Demo: BMad Initial-Commit (lokal)** ist nur für die bewusste manuelle Einrichtung vorgesehen:
+**Demo: Init · BMad Initial-Commit (manuell, lokal)** ist nur für die bewusste manuelle Einrichtung vorgesehen:
 Er committet nach Bestätigung mit `COMMIT` **alle** Dateien, auch vorhandene Tickets. Vorher
 alle Dateien prüfen. Keiner der lokalen Commits wird gepusht.
 
@@ -106,18 +106,28 @@ Aktuelle Referenz: [Demo Time v3 Schema](https://demotime.show/demo-time.schema.
 [Copilot-Aktionen](https://demotime.show/actions/copilot/), [Datei-Aktionen](https://demotime.show/actions/file/),
 [Text-Aktionen](https://demotime.show/actions/text/) und [Terminal-Aktionen](https://demotime.show/actions/terminal/).
 
+Die Szenentitel ordnen die Schritte den Folien zu: SDD **Demo 1 Clarify**, **Demo 2 Plan**
+und **Demo 3 Build & verify**; AI Context Setup **Demo 1 Instructions**, **Demo 2 Prompt oder
+Skill?** und **Demo 3 Reviewer-Rolle**. `Init`, `Live`, `Helfer` und `Fallback` kennzeichnen
+den Zweck; die Reihenfolge und automatischen Übergänge bleiben unverändert.
+
+Für einen bestehenden Workspace nach Aktualisierung des Repositories die beiden Dateien aus
+`demotime/` mit `.run/baseline/.demo/` vergleichen und bei Bedarf übernehmen. Für die neuen
+Task-Namen ebenso `fixtures/common/.vscode/tasks.json` mit `.run/baseline/.vscode/tasks.json`
+vergleichen und bei Bedarf übernehmen. Eigene Änderungen vorher sichern; ein Reset ist nicht nötig.
+
 ## Ohne Demo Time vorführen
 
 Nach der Vorbereitung `.run/baseline` als eigenen VS-Code-Ordner öffnen. Die Tasks laufen dort über
 **Terminal → Aufgabe ausführen**; die Aufgaben im Repository können dieselben Befehle auslösen.
 Die folgenden Chat-Nachrichten stehen vollständig in den jeweiligen Abschnitten unten.
 
-1. **SDD:** Nach Prüfung und Sicherung vorhandener Änderungen **Demo: Ausgangsdatei zurücksetzen (überschreiben)** wählen. **Demo: Starten** ausführen und die falsche Zählung zeigen; **Demo: Ausgangsversion testen** schlägt erwartungsgemäß fehl.
-2. BMad wie oben mit **Demo: Komplett vorbereiten (mit BMad)** einrichten und die installierten Skills prüfen. Im neuen Agent-Chat den Prompt aus **Schritt 1** senden und das Ticket prüfen; bei Timeout `spec.md` als Offline-Fallback zeigen.
-3. **Demo: Ticket vorbereiten** ausführen: Ein vorhandenes Ticket wird übernommen, andernfalls die Offline-Spec kopiert; der Task committet ausschließlich das Ticket. Im neuen Agent-Chat den Prompt aus **Schritt 2** senden und vor Änderungen pausieren; bei Timeout `plan.md` zeigen.
-4. Den Plan prüfen und den Prompt aus **Schritt 3** im selben Chat senden. Danach **Demo: Ausgangsversion testen** und **Demo: Diff anzeigen** ausführen. Bei Timeout oder falschem Scope den Chat abbrechen, **Demo: Referenzlösung testen** und den Diff zeigen.
-5. **AI Context Setup:** Nach Sicherung ggf. **Demo: Ausgangsdatei zurücksetzen (überschreiben)** wählen. In einem neuen Ask-Chat C1 mit `spec.md` und `SessionCatalog.pas` senden; im nächsten Chat denselben Prompt zusätzlich mit `context/copilot-instructions.md` senden. Bei Timeout `context/beobachtung.md` zeigen.
-6. Im neuen Ask-Chat die Dateien `context/test-review.prompt.md` und `context/catalog-review/SKILL.md` öffnen und um eine kurze Zuordnung ihrer Rollen bitten. Danach `context/pascal-reviewer.agent.md` zeigen und C3 im neuen Ask-Chat senden. Bei Timeout den Chat abbrechen, `context/beobachtung.md` zeigen und **Demo: Ausgangsversion testen** ausführen.
+1. **SDD:** Nach Prüfung und Sicherung vorhandener Änderungen **Demo: Reset · Ausgangsdatei zurücksetzen (überschreiben)** wählen. **Demo: Live · Anwendung starten** ausführen und die falsche Zählung zeigen; **Demo: Helfer · Ausgangsversion testen** schlägt erwartungsgemäß fehl.
+2. BMad wie oben mit **Demo: Init · Komplett vorbereiten (mit BMad)** einrichten und die installierten Skills prüfen. Im neuen Agent-Chat den Prompt aus **Schritt 1** senden und das Ticket prüfen; bei Timeout `spec.md` als Offline-Fallback zeigen.
+3. **Demo: SDD Demo 2 Plan · Helfer: Ticket vorbereiten** ausführen: Ein vorhandenes Ticket wird übernommen, andernfalls die Offline-Spec kopiert; der Task committet ausschließlich das Ticket. Im neuen Agent-Chat den Prompt aus **Schritt 2** senden und vor Änderungen pausieren; bei Timeout `plan.md` zeigen.
+4. Den Plan prüfen und den Prompt aus **Schritt 3** im selben Chat senden. Danach **Demo: Helfer · Ausgangsversion testen** und **Demo: Helfer · Diff anzeigen** ausführen. Bei Timeout oder falschem Scope den Chat abbrechen, **Demo: Fallback · Referenzlösung testen** und den Diff zeigen.
+5. **AI Context Setup:** Nach Sicherung ggf. **Demo: Reset · Ausgangsdatei zurücksetzen (überschreiben)** wählen. In einem neuen Ask-Chat C1 mit `spec.md` und `SessionCatalog.pas` senden; im nächsten Chat denselben Prompt zusätzlich mit `context/copilot-instructions.md` senden. Bei Timeout `context/beobachtung.md` zeigen.
+6. Im neuen Ask-Chat die Dateien `context/test-review.prompt.md` und `context/catalog-review/SKILL.md` öffnen und um eine kurze Zuordnung ihrer Rollen bitten. Danach `context/pascal-reviewer.agent.md` zeigen und C3 im neuen Ask-Chat senden. Bei Timeout den Chat abbrechen, `context/beobachtung.md` zeigen und **Demo: Helfer · Ausgangsversion testen** ausführen.
 
 Nach der Demo Änderungen im isolierten Workspace prüfen und bei Bedarf sichern. Zum vollständigen
 Neustart den Workspace schließen und den ausdrücklich bestätigten Reset-Task im Repository verwenden.

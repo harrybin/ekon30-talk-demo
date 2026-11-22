@@ -2,84 +2,84 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Demo: Vorbereiten (bestehende Daten behalten)",
+      "label": "Demo: Init · Offline vorbereiten (bestehende Daten behalten)",
       "type": "process", "command": "node", "args": ["demo.mjs", "prepare"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Alles zurücksetzen (.run löschen)",
+      "label": "Demo: Reset · Alles zurücksetzen (.run löschen)",
       "type": "process", "command": "node", "args": ["demo.mjs", "prepare", "--reset", "${input:confirmAllReset}"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Ausgangsdatei zurücksetzen (überschreiben)",
+      "label": "Demo: Reset · Ausgangsdatei zurücksetzen (überschreiben)",
       "type": "process", "command": "node", "args": ["demo.mjs", "reset-baseline", "${input:confirmFileReset}"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Komplett vorbereiten (mit BMad)",
+      "label": "Demo: Init · Komplett vorbereiten (mit BMad)",
       "type": "process", "command": "node", "args": ["demo.mjs", "init-bmad"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     },
     {
-      "label": "Demo: BMad-Skills installieren",
+      "label": "Demo: Init · BMad-Skills installieren (manuell)",
       "type": "shell", "command": "npx",
       "args": ["skills", "add", "bmad-code-org/BMAD-METHOD", "--skill", "bmad", "--skill", "bmod-core-tools", "--skill", "bmod-method", "--skill", "bmad-agent-po", "--skill", "bmad-build", "--agent", "github-copilot", "--copy"],
       "options": { "cwd": "${workspaceFolder}\\.run\\baseline" },
       "problemMatcher": []
     },
     {
-      "label": "Demo: BMad Initial-Commit (lokal)",
+      "label": "Demo: Init · BMad Initial-Commit (manuell, lokal)",
       "type": "process", "command": "node", "args": ["demo.mjs", "init-bmad-commit", "${input:confirmCommit}"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Ticket vorbereiten",
+      "label": "Demo: SDD Demo 2 Plan · Helfer: Ticket vorbereiten",
       "type": "process", "command": "node", "args": ["demo.mjs", "prepare-bmad-ticket"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Bauen",
+      "label": "Demo: Helfer · Anwendung bauen",
       "type": "process", "command": "node", "args": ["demo.mjs", "build", "repository"],
       "group": "build", "problemMatcher": []
     },
     {
-      "label": "Demo: Starten",
+      "label": "Demo: Live · Anwendung starten",
       "type": "process", "command": "node", "args": ["demo.mjs", "run", "repository"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     },
     {
-      "label": "Demo: Ausgangsversion bauen",
+      "label": "Demo: Helfer · Ausgangsversion bauen",
       "type": "process", "command": "node", "args": ["demo.mjs", "build", "baseline"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Ausgangsversion starten",
+      "label": "Demo: Live · Ausgangsversion starten",
       "type": "process", "command": "node", "args": ["demo.mjs", "run", "baseline"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     },
     {
-      "label": "Demo: Referenzlösung bauen",
+      "label": "Demo: Fallback · Referenzlösung bauen",
       "type": "process", "command": "node", "args": ["demo.mjs", "build", "solution"],
       "problemMatcher": []
     },
     {
-      "label": "Demo: Referenzlösung starten",
+      "label": "Demo: Fallback · Referenzlösung starten",
       "type": "process", "command": "node", "args": ["demo.mjs", "run", "solution"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     },
     {
-      "label": "Demo: Ausgangsversion testen",
+      "label": "Demo: Helfer · Ausgangsversion testen",
       "type": "process", "command": "node", "args": ["demo.mjs", "test", "baseline"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     },
     {
-      "label": "Demo: Referenzlösung testen",
+      "label": "Demo: Fallback · Referenzlösung testen",
       "type": "process", "command": "node", "args": ["demo.mjs", "test", "solution"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     },
     {
-      "label": "Demo: Diff anzeigen",
+      "label": "Demo: Helfer · Diff anzeigen",
       "type": "process", "command": "node", "args": ["demo.mjs", "diff"],
       "problemMatcher": [], "presentation": { "reveal": "always" }
     }
