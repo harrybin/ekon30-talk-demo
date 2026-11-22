@@ -13,7 +13,7 @@
       "moves": [
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs reset-baseline",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" reset-baseline",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
@@ -160,7 +160,7 @@
         },
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs test baseline",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" test baseline",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },

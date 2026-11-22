@@ -13,7 +13,7 @@
       "moves": [
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs reset-baseline",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" reset-baseline",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
@@ -31,7 +31,7 @@
       "moves": [
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs run baseline",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" run baseline",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         }
@@ -86,7 +86,7 @@
       "moves": [
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs prepare-bmad-ticket",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" prepare-bmad-ticket",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
@@ -128,7 +128,7 @@
       "moves": [
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs test baseline",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" test baseline",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
@@ -159,13 +159,13 @@
         },
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs test solution",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" test solution",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs diff",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" diff",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
@@ -183,13 +183,13 @@
       "moves": [
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs test baseline",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" test baseline",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
         {
           "action": "executeTerminalCommand",
-          "command": "node ..\\..\\demo.mjs diff",
+          "command": "node \"{DT_WORKSPACE_PATH}\\..\\..\\demo.mjs\" diff",
           "terminalId": "DemoTime",
           "waitTimeout": 60000
         },
